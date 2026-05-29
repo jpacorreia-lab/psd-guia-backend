@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>PSD Montalegre — Painel Admin</title>
+  <style>
+    /* ─── Reset & Base ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --orange:      #F47920;
+      --orange-dark: #D4650E;
+      --orange-dim:  #FEF0E4;
+      --orange-mid:  #FDDCB8;
+      --text:        #111827;
+      --text-mid:    #374151;
+      --text-soft:   #6B7280;
+      --border:      #E5E7EB;
+      --bg:          #F9FAFB;
+      --white:       #FFFFFF;
+      --green:       #16A34A;
+      --green-bg:    #DCFCE7;
+      --red:         #DC2626;
+      --red-bg:      #FEE2E2;
+      --blue:        #2563EB;
+      --blue-bg:     #DBEAFE;
+      --radius:      10px;
+      --shadow:      0 1px 4px rgba(0,0,0,.08), 0 0 0 1px rgba(0,0,0,.04);
+    }
+    html, body { height: 100%; background: var(--bg); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: var(--text); font-size: 15px; line-height: 1.5; }
+
+    /* ─── Utils ─────────────────────────────────────────────────── */
+    [hidden] { display: none !important; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+
+    /* ─── Login Screen ───────────────────────────────────────────── */
+    #screen-login {
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, var(--orange) 0%, #E85A00 100%);
+      padding: 1.5rem;
+    }
+    .login-card {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 2.5rem 2rem;
+      width: 100%; max-width: 380px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.2);
+    }
+    .login-logo {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .login-logo .logo-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 64px; height: 64px;
+      background: var(--orange); border-radius: 14px;
+      font-size: 28px; font-weight: 900; color: white;
+      margin-bottom: .75rem;
+      box-shadow: 0 4px 12px rgba(244,121,32,.35);
+    }
+    .login-logo h1 { font-size: 1.15rem; font-weight: 700; color: var(--text); line-height: 1.3; }
+    .login-logo p { font-size: .82rem; color: var(--text-soft); margin-top: .2rem; }
+    .login-form label { display: block; font-size: .82rem; font-weight: 600; color: var(--text-mid); margin-bottom: .35rem; }
+    .login-form .field { margin-bottom: 1.1rem; }
+    .login-form input {
+      width: 100%; padding: .72rem .9rem;
+      border: 1.5px solid var(--border); border-radius: 8px;
+      font-size: .95rem; color: var(--text);
+      outline: none; transition: border-color .15s;
+    }
+    .login-form input:focus { border-color: var(--orange); box-shadow: 0 0 0 3px rgba(244,121,32,.12); }
+    .btn-login {
+      width: 100%; padding: .82rem;
+      background: var(--orange); color: white;
+      border: none; border-radius: 8px;
+      font-size: 1rem; font-weight: 700; cursor: pointer;
+      transition: background .15s, transform .1s;
+    }
+    .btn-login:hover { background: var(--orange-dark); }
+    .btn-login:active { transform: scale(.98); }
+    .login-error {
+      background: var(--red-bg); color: var(--red);
+      border-radius: 7px; padding: .6rem .8rem;
+      font-size: .82rem; font-weight: 500;
+      margin-bottom: 1rem; display: none;
+    }
+
+    /* ─── Admin Screen ───────────────────────────────────────────── */
+    #screen-admin { display: flex; flex-direction: column; min-height: 100vh; }
+
+    /* Header */
+    .app-header {
+      background: var(--orange);
+      color: white;
+      padding: 0 1.25rem;
+      height: 56px;
+      display: flex; align-items: center; gap: .75rem;
+      position: sticky; top: 0; z-index: 50;
+      box-shadow: 0 2px 8px rgba(0,0,0,.15);
+    }
+    .app-header .logo-sm {
+      width: 34px; height: 34px; background: rgba(255,255,255,.22);
+      border-radius: 8px; display: flex; align-items: center; justify-content: center;
+      font-size: 15px; font-weight: 900; color: white; flex-shrink: 0;
+    }
+    .app-header .title { font-size: .95rem; font-weight: 700; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .app-header .user-pill {
+      font-size: .78rem; background: rgba(255,255,255,.18);
+      border-radius: 999px; padding: .3rem .75rem;
+      white-space: nowrap; max-width: 140px; overflow: hidden; text-overflow: ellipsis;
+    }
+    .btn-logout {
+      background: rgba(255,255,255,.18); border: none; color: white;
+      border-radius: 7px; padding: .38rem .7rem;
+      font-size: .8rem; font-weight: 600; cursor: pointer;
+      transition: background .15s; white-space: nowrap; flex-shrink: 0;
+    }
+    .btn-logout:hover { background: rgba(255,255,255,.3); }
+
+    /* Stats bar */
+    .stats-bar {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: .75rem 1.25rem;
+      display: flex; gap: 1.25rem; overflow-x: auto;
+    }
+    .stat {
+      display: flex; align-items: center; gap: .5rem;
+      white-space: nowrap; font-size: .82rem; color: var(--text-soft);
+    }
+    .stat strong { font-size: 1.15rem; font-weight: 700; color: var(--text); margin-right: .1rem; }
+    .stat-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .stat-dot.green { background: var(--green); }
+    .stat-dot.red { background: var(--red); }
+    .stat-dot.orange { background: var(--orange); }
+
+    /* Toolbar */
+    .toolbar {
+      padding: 1rem 1.25rem;
+      display: flex; gap: .75rem; align-items: center; flex-wrap: wrap;
+    }
+    .search-wrap {
+      position: relative; flex: 1; min-width: 180px;
+    }
+    .search-wrap svg {
+      position: absolute; left: .7rem; top: 50%; transform: translateY(-50%);
+      color: var(--text-soft); pointer-events: none;
+    }
+    .search-input {
+      width: 100%; padding: .6rem .75rem .6rem 2.25rem;
+      border: 1.5px solid var(--border); border-radius: 8px;
+      font-size: .88rem; outline: none; background: var(--white);
+      transition: border-color .15s;
+    }
+    .search-input:focus { border-color: var(--orange); box-shadow: 0 0 0 3px rgba(244,121,32,.1); }
+    .btn-primary {
+      background: var(--orange); color: white;
+      border: none; border-radius: 8px;
+      padding: .62rem 1.1rem; font-size: .88rem; font-weight: 600;
+      cursor: pointer; display: flex; align-items: center; gap: .4rem;
+      transition: background .15s; white-space: nowrap;
+    }
+    .btn-primary:hover { background: var(--orange-dark); }
+
+    /* ─── Table ──────────────────────────────────────────────────── */
+    .table-outer { padding: 0 1.25rem 2rem; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+    thead th {
+      text-align: left; padding: .7rem 1rem;
+      font-size: .75rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .06em; color: var(--text-soft);
+      background: var(--bg); border-bottom: 1px solid var(--border);
+    }
+    tbody td { padding: .85rem 1rem; border-bottom: 1px solid var(--border); font-size: .875rem; vertical-align: middle; }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: var(--orange-dim); }
+    .td-name { font-weight: 600; }
+    .td-sub { font-size: .75rem; color: var(--text-soft); margin-top: .1rem; }
+    .td-last { font-size: .8rem; color: var(--text-soft); }
+
+    /* Badges */
+    .badge {
+      display: inline-block; font-size: .72rem; font-weight: 700;
+      padding: .2rem .55rem; border-radius: 999px;
+    }
+    .badge-active  { background: var(--green-bg); color: var(--green); }
+    .badge-inactive{ background: var(--red-bg); color: var(--red); }
+    .badge-admin   { background: var(--orange-dim); color: var(--orange-dark); }
+    .badge-editor  { background: var(--blue-bg); color: var(--blue); }
+    .badge-member  { background: var(--bg); color: var(--text-soft); border: 1px solid var(--border); }
+    .badge-pw      { background: #FEF9C3; color: #92400E; margin-left: .35rem; font-size: .68rem; }
+
+    /* Action buttons */
+    .actions { display: flex; gap: .4rem; flex-wrap: wrap; }
+    .btn-sm {
+      border: none; border-radius: 6px;
+      padding: .32rem .65rem; font-size: .76rem; font-weight: 600;
+      cursor: pointer; transition: opacity .15s; white-space: nowrap;
+    }
+    .btn-activate   { background: var(--green-bg); color: var(--green); }
+    .btn-deactivate { background: var(--red-bg); color: var(--red); }
+    .btn-reset      { background: var(--orange-dim); color: var(--orange-dark); }
+    .btn-sm:hover { opacity: .75; }
+
+    /* Empty state */
+    .empty { text-align: center; padding: 3rem 1rem; color: var(--text-soft); font-size: .9rem; }
+
+    /* ─── Mobile card layout ─────────────────────────────────────── */
+    @media (max-width: 680px) {
+      .table-outer { padding: 0 1rem 2rem; }
+      table, thead, tbody, tr, th, td { display: block; }
+      thead { display: none; }
+      tbody tr {
+        background: var(--white);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        margin-bottom: .75rem;
+        padding: .25rem 0;
+      }
+      tbody td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: .55rem 1rem;
+        border-bottom: 1px solid var(--border);
+      }
+      tbody tr:last-child td:last-child { border-bottom: none; }
+      tbody td::before {
+        content: attr(data-label);
+        font-size: .72rem; font-weight: 700; text-transform: uppercase;
+        letter-spacing: .05em; color: var(--text-soft);
+        min-width: 90px; flex-shrink: 0;
+      }
+      .td-sub { display: none; }
+      .actions { justify-content: flex-end; }
+      tbody tr:hover { background: var(--white); }
+    }
+
+    /* ─── Modals ─────────────────────────────────────────────────── */
+    .overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.45);
+      z-index: 200;
+      display: flex; align-items: flex-end; justify-content: center;
+      padding: 0;
+    }
+    @media (min-width: 520px) {
+      .overlay { align-items: center; padding: 1rem; }
+    }
+    .modal {
+      background: var(--white);
+      border-radius: 16px 16px 0 0;
+      width: 100%; max-width: 480px;
+      max-height: 92vh;
+      overflow-y: auto;
+      padding: 1.5rem 1.25rem 2rem;
+      box-shadow: 0 -4px 30px rgba(0,0,0,.15);
+      position: relative;
+    }
+    @media (min-width: 520px) {
+      .modal { border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,.2); }
+    }
+    .modal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.25rem;
+    }
+    .modal-header h2 { font-size: 1.1rem; font-weight: 700; }
+    .btn-close {
+      width: 32px; height: 32px; border: none; background: var(--bg);
+      border-radius: 8px; font-size: 1.1rem; cursor: pointer; color: var(--text-soft);
+      display: flex; align-items: center; justify-content: center;
+      transition: background .15s;
+    }
+    .btn-close:hover { background: var(--border); }
+
+    /* Form inside modal */
+    .form-field { margin-bottom: 1rem; }
+    .form-field label { display: block; font-size: .82rem; font-weight: 600; color: var(--text-mid); margin-bottom: .35rem; }
+    .form-field input, .form-field select {
+      width: 100%; padding: .65rem .85rem;
+      border: 1.5px solid var(--border); border-radius: 8px;
+      font-size: .9rem; color: var(--text); outline: none;
+      transition: border-color .15s; background: var(--white);
+    }
+    .form-field input:focus, .form-field select:focus {
+      border-color: var(--orange); box-shadow: 0 0 0 3px rgba(244,121,32,.1);
+    }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+    .form-footer { display: flex; gap: .6rem; margin-top: 1.25rem; }
+    .btn-cancel {
+      flex: 1; padding: .7rem; background: var(--bg); border: 1.5px solid var(--border);
+      border-radius: 8px; font-size: .9rem; font-weight: 600; cursor: pointer; color: var(--text-mid);
+      transition: background .15s;
+    }
+    .btn-cancel:hover { background: var(--border); }
+    .btn-submit {
+      flex: 2; padding: .7rem; background: var(--orange); color: white;
+      border: none; border-radius: 8px; font-size: .9rem; font-weight: 700;
+      cursor: pointer; transition: background .15s;
+    }
+    .btn-submit:hover { background: var(--orange-dark); }
+    .btn-submit:disabled { opacity: .6; cursor: default; }
+
+    /* Code field */
+    .code-field {
+      display: flex; gap: .5rem; align-items: center;
+    }
+    .code-field input {
+      flex: 1; font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 1.1rem; font-weight: 700; letter-spacing: .12em;
+      text-align: center; background: var(--orange-dim);
+      border-color: var(--orange-mid) !important; color: var(--orange-dark);
+    }
+    .btn-regen {
+      border: 1.5px solid var(--border); background: var(--white);
+      border-radius: 8px; padding: .62rem .75rem; cursor: pointer;
+      font-size: .8rem; font-weight: 600; color: var(--text-mid);
+      transition: border-color .15s; white-space: nowrap;
+    }
+    .btn-regen:hover { border-color: var(--orange); color: var(--orange); }
+
+    /* ─── Code display modal ─────────────────────────────────────── */
+    .code-success-icon {
+      width: 52px; height: 52px; background: var(--green-bg);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-size: 24px; margin: 0 auto 1rem;
+    }
+    .code-big {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 2rem; font-weight: 800; letter-spacing: .18em;
+      color: var(--orange-dark); background: var(--orange-dim);
+      border: 2px dashed var(--orange-mid);
+      border-radius: 10px; padding: 1rem;
+      text-align: center; margin: 1rem 0;
+    }
+    .code-info { font-size: .82rem; color: var(--text-soft); text-align: center; margin-bottom: 1.25rem; }
+    .code-info strong { color: var(--text); }
+    .code-actions { display: flex; flex-direction: column; gap: .6rem; }
+    .btn-copy {
+      padding: .8rem; background: var(--orange); color: white;
+      border: none; border-radius: 10px; font-size: .95rem; font-weight: 700;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: .5rem;
+      transition: background .15s;
+    }
+    .btn-copy:hover { background: var(--orange-dark); }
+    .btn-whatsapp {
+      padding: .8rem; background: #25D366; color: white;
+      border: none; border-radius: 10px; font-size: .95rem; font-weight: 700;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: .5rem;
+      transition: background .15s;
+    }
+    .btn-whatsapp:hover { background: #1ebe59; }
+    .btn-close-code {
+      padding: .7rem; background: var(--bg); border: 1.5px solid var(--border);
+      border-radius: 10px; font-size: .9rem; font-weight: 600; cursor: pointer;
+      color: var(--text-mid); transition: background .15s;
+    }
+    .btn-close-code:hover { background: var(--border); }
+
+    /* ─── Toast ──────────────────────────────────────────────────── */
+    #toast {
+      position: fixed; bottom: 1.25rem; left: 50%; transform: translateX(-50%);
+      background: #1F2937; color: white;
+      padding: .7rem 1.25rem; border-radius: 10px;
+      font-size: .875rem; font-weight: 500;
+      box-shadow: 0 4px 16px rgba(0,0,0,.2);
+      z-index: 999; white-space: nowrap;
+      opacity: 0; transition: opacity .2s;
+      pointer-events: none;
+    }
+    #toast.show { opacity: 1; }
+    #toast.ok  { background: var(--green); }
+    #toast.err { background: var(--red); }
+
+    /* ─── Spinner ─────────────────────────────────────────────────── */
+    .spinner {
+      display: inline-block; width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,.35);
+      border-top-color: white; border-radius: 50%;
+      animation: spin .6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════
+     SCREEN 1 — LOGIN
+═══════════════════════════════════════════════════════ -->
+<div id="screen-login">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="logo-badge">PSD</div>
+      <h1>Guia do Autarca<br>PSD Montalegre</h1>
+      <p>Painel de Administração</p>
+    </div>
+    <div id="login-error" class="login-error"></div>
+    <form class="login-form" onsubmit="doLogin(event)">
+      <div class="field">
+        <label for="inp-email">Email</label>
+        <input id="inp-email" type="email" autocomplete="username" required placeholder="admin@psd.pt" />
+      </div>
+      <div class="field">
+        <label for="inp-pw">Password</label>
+        <input id="inp-pw" type="password" autocomplete="current-password" required placeholder="••••••••" />
+      </div>
+      <button type="submit" class="btn-login" id="btn-login">Entrar</button>
+    </form>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     SCREEN 2 — ADMIN PANEL
+═══════════════════════════════════════════════════════ -->
+<div id="screen-admin" hidden>
+
+  <header class="app-header">
+    <div class="logo-sm" aria-hidden="true">PSD</div>
+    <span class="title">Guia do Autarca — Admin</span>
+    <span class="user-pill" id="header-user"></span>
+    <button class="btn-logout" onclick="doLogout()">Sair</button>
+  </header>
+
+  <div class="stats-bar">
+    <div class="stat">
+      <span class="stat-dot orange"></span>
+      <strong id="stat-total">—</strong> utilizadores
+    </div>
+    <div class="stat">
+      <span class="stat-dot green"></span>
+      <strong id="stat-active">—</strong> activos
+    </div>
+    <div class="stat">
+      <span class="stat-dot red"></span>
+      <strong id="stat-inactive">—</strong> inactivos
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-wrap">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input class="search-input" type="search" placeholder="Pesquisar nome, email ou freguesia…" oninput="filterUsers(this.value)" aria-label="Pesquisar utilizadores" />
+    </div>
+    <button class="btn-primary" onclick="openCreateModal()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      Criar utilizador
+    </button>
+  </div>
+
+  <div class="table-outer">
+    <table id="users-table" aria-label="Lista de utilizadores">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Cargo / Função</th>
+          <th>Freguesia</th>
+          <th>Último acesso</th>
+          <th>Estado</th>
+          <th>Acções</th>
+        </tr>
+      </thead>
+      <tbody id="users-tbody">
+        <tr><td colspan="6" class="empty">A carregar…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div><!-- /screen-admin -->
+
+<!-- ══════════════════════════════════════════════════════
+     MODAL — CRIAR UTILIZADOR
+═══════════════════════════════════════════════════════ -->
+<div id="modal-create" class="overlay" hidden role="dialog" aria-modal="true" aria-labelledby="create-title">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="create-title">Novo utilizador</h2>
+      <button class="btn-close" onclick="closeCreateModal()" aria-label="Fechar">✕</button>
+    </div>
+    <form onsubmit="submitCreate(event)">
+      <div class="form-row">
+        <div class="form-field">
+          <label for="c-name">Nome completo *</label>
+          <input id="c-name" type="text" required autocomplete="off" />
+        </div>
+        <div class="form-field">
+          <label for="c-email">Email *</label>
+          <input id="c-email" type="email" required autocomplete="off" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label for="c-cargo">Cargo</label>
+          <input id="c-cargo" type="text" placeholder="Ex: Vereador" autocomplete="off" />
+        </div>
+        <div class="form-field">
+          <label for="c-role">Função</label>
+          <select id="c-role">
+            <option value="member">Membro</option>
+            <option value="editor">Editor</option>
+            <option value="admin">Administrador</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-field">
+        <label for="c-parish">Freguesia</label>
+        <select id="c-parish">
+          <option value="">— Seleccionar —</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Código de acesso</label>
+        <div class="code-field">
+          <input id="c-code" type="text" readonly aria-label="Código de acesso gerado" />
+          <button type="button" class="btn-regen" onclick="regenCode()">↻ Novo</button>
+        </div>
+      </div>
+      <div id="create-error" style="color:var(--red);font-size:.82rem;margin-top:.5rem;display:none"></div>
+      <div class="form-footer">
+        <button type="button" class="btn-cancel" onclick="closeCreateModal()">Cancelar</button>
+        <button type="submit" class="btn-submit" id="btn-submit-create">Criar utilizador</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     MODAL — CÓDIGO DE ACESSO
+═══════════════════════════════════════════════════════ -->
+<div id="modal-code" class="overlay" hidden role="dialog" aria-modal="true" aria-labelledby="code-title">
+  <div class="modal" style="text-align:center">
+    <div class="modal-header" style="justify-content:flex-end">
+      <button class="btn-close" onclick="closeCodeModal()" aria-label="Fechar">✕</button>
+    </div>
+    <div class="code-success-icon" aria-hidden="true">✓</div>
+    <h2 id="code-title" style="font-size:1.1rem;margin-bottom:.4rem">Utilizador criado!</h2>
+    <p class="code-info">Código de acesso de <strong id="code-user-name"></strong>:</p>
+    <div class="code-big" id="code-display" aria-label="Código de acesso"></div>
+    <p class="code-info">Partilha este código com o utilizador.<br>Será obrigado a alterar a password no primeiro acesso.</p>
+    <div class="code-actions">
+      <button class="btn-copy" onclick="copyCode()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+        </svg>
+        Copiar código
+      </button>
+      <button class="btn-whatsapp" onclick="sendWhatsApp()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+          <path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.533 5.857L.054 23.944 6.29 22.44A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.817 9.817 0 0 1-5.001-1.372l-.36-.214-3.73.978.995-3.63-.234-.374A9.818 9.818 0 0 1 2.182 12C2.182 6.571 6.571 2.182 12 2.182S21.818 6.571 21.818 12 17.429 21.818 12 21.818z"/>
+        </svg>
+        Enviar por WhatsApp
+      </button>
+      <button class="btn-close-code" onclick="closeCodeModal()">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" role="alert" aria-live="polite"></div>
+
+<!-- ══════════════════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════════════════ -->
+<script>
+'use strict';
+
+// ─── State ──────────────────────────────────────────────────────────────
+let allUsers   = [];
+let parishes   = [];
+let currentMe  = null;
+let currentCode = '';
+let currentCodeName = '';
+
+// ─── Bootstrap ──────────────────────────────────────────────────────────
+(async function init() {
+  try {
+    const me = await api('GET', '/admin/api/me');
+    currentMe = me;
+    showAdmin(me);
+  } catch {
+    showLogin();
+  }
+})();
+
+// ─── API helper ─────────────────────────────────────────────────────────
+async function api(method, path, body) {
+  const res = await fetch(path, {
+    method,
+    headers: body ? { 'Content-Type': 'application/json' } : {},
+    credentials: 'include',
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const data = await res.json().catch(() => ({}));
+  if (res.status === 401) throw Object.assign(new Error('unauthorized'), { status: 401 });
+  if (!res.ok) throw new Error(data.error || `Erro ${res.status}`);
+  return data;
+}
+
+// ─── Screens ────────────────────────────────────────────────────────────
+function showLogin() {
+  document.getElementById('screen-login').removeAttribute('hidden');
+  document.getElementById('screen-admin').setAttribute('hidden', '');
+  document.getElementById('inp-email').focus();
+}
+
+async function showAdmin(me) {
+  document.getElementById('screen-login').setAttribute('hidden', '');
+  document.getElementById('screen-admin').removeAttribute('hidden');
+  document.getElementById('header-user').textContent = me.name;
+  await Promise.all([loadParishes(), loadUsers()]);
+}
+
+// ─── Auth ────────────────────────────────────────────────────────────────
+async function doLogin(e) {
+  e.preventDefault();
+  const btn = document.getElementById('btn-login');
+  const errEl = document.getElementById('login-error');
+  errEl.style.display = 'none';
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>';
+  try {
+    const email    = document.getElementById('inp-email').value;
+    const password = document.getElementById('inp-pw').value;
+    const { user } = await api('POST', '/auth/login', { email, password });
+    if (user.role !== 'admin') throw new Error('Sem permissões de administrador.');
+    currentMe = user;
+    await showAdmin(user);
+  } catch (err) {
+    errEl.textContent = err.message === 'unauthorized' ? 'Credenciais inválidas.' : (err.message || 'Erro ao fazer login.');
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Entrar';
+  }
+}
+
+async function doLogout() {
+  await fetch('/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {});
+  showLogin();
+  allUsers = [];
+}
+
+// ─── Data loading ────────────────────────────────────────────────────────
+async function loadParishes() {
+  parishes = await api('GET', '/admin/api/parishes');
+  const sel = document.getElementById('c-parish');
+  sel.innerHTML = '<option value="">— Seleccionar —</option>';
+  parishes.forEach(p => {
+    const o = document.createElement('option');
+    o.value = p.id; o.textContent = p.name;
+    sel.appendChild(o);
+  });
+}
+
+async function loadUsers() {
+  allUsers = await api('GET', '/admin/api/users');
+  updateStats();
+  renderUsers(allUsers);
+}
+
+// ─── Stats ───────────────────────────────────────────────────────────────
+function updateStats() {
+  const active = allUsers.filter(u => u.active).length;
+  document.getElementById('stat-total').textContent   = allUsers.length;
+  document.getElementById('stat-active').textContent  = active;
+  document.getElementById('stat-inactive').textContent = allUsers.length - active;
+}
+
+// ─── Render table ────────────────────────────────────────────────────────
+function renderUsers(users) {
+  const tbody = document.getElementById('users-tbody');
+  if (!users.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">Nenhum utilizador encontrado.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = users.map(u => {
+    const isSelf = currentMe && u.id === currentMe.id;
+    return `
+    <tr>
+      <td data-label="Nome">
+        <div class="td-name">${esc(u.name)}</div>
+        <div class="td-sub">${esc(u.email)}</div>
+      </td>
+      <td data-label="Cargo">
+        ${esc(u.cargo || '—')}
+        <span class="badge badge-${u.role}" style="margin-left:.35rem">${roleLabel(u.role)}</span>
+        ${u.mustChangePw ? '<span class="badge badge-pw">↺ PW</span>' : ''}
+      </td>
+      <td data-label="Freguesia">${esc(u.parish?.name || '—')}</td>
+      <td data-label="Último acesso" class="td-last">${relativeTime(u.lastLoginAt)}</td>
+      <td data-label="Estado">
+        <span class="badge ${u.active ? 'badge-active' : 'badge-inactive'}">${u.active ? 'Activo' : 'Inactivo'}</span>
+      </td>
+      <td data-label="Acções">
+        <div class="actions">
+          ${isSelf ? '' : `
+            <button class="btn-sm ${u.active ? 'btn-deactivate' : 'btn-activate'}"
+              onclick="toggleUser('${u.id}',${u.active})"
+              aria-label="${u.active ? 'Desactivar' : 'Activar'} ${esc(u.name)}">
+              ${u.active ? 'Desactivar' : 'Activar'}
+            </button>
+          `}
+          <button class="btn-sm btn-reset" onclick="resetPw('${u.id}','${esc(u.name)}')"
+            aria-label="Reset password de ${esc(u.name)}">Reset PW</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function filterUsers(q) {
+  const ql = q.toLowerCase();
+  const filtered = allUsers.filter(u =>
+    u.name.toLowerCase().includes(ql) ||
+    u.email.toLowerCase().includes(ql) ||
+    (u.parish?.name || '').toLowerCase().includes(ql) ||
+    (u.cargo || '').toLowerCase().includes(ql)
+  );
+  renderUsers(filtered);
+}
+
+// ─── Create user modal ───────────────────────────────────────────────────
+function openCreateModal() {
+  document.getElementById('c-name').value  = '';
+  document.getElementById('c-email').value = '';
+  document.getElementById('c-cargo').value = '';
+  document.getElementById('c-role').value  = 'member';
+  document.getElementById('c-parish').value = '';
+  document.getElementById('create-error').style.display = 'none';
+  regenCode();
+  document.getElementById('modal-create').removeAttribute('hidden');
+  setTimeout(() => document.getElementById('c-name').focus(), 50);
+}
+
+function closeCreateModal() {
+  document.getElementById('modal-create').setAttribute('hidden', '');
+}
+
+function regenCode() {
+  const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  const code = Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+  document.getElementById('c-code').value = code;
+}
+
+async function submitCreate(e) {
+  e.preventDefault();
+  const errEl = document.getElementById('create-error');
+  const btn   = document.getElementById('btn-submit-create');
+  errEl.style.display = 'none';
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>';
+  try {
+    const body = {
+      name:     document.getElementById('c-name').value.trim(),
+      email:    document.getElementById('c-email').value.trim(),
+      cargo:    document.getElementById('c-cargo').value.trim() || null,
+      role:     document.getElementById('c-role').value,
+      parishId: document.getElementById('c-parish').value || null,
+      password: document.getElementById('c-code').value,
+    };
+    const data = await api('POST', '/admin/api/users', body);
+    closeCreateModal();
+    await loadUsers();
+    showCodeModal(data.tempPassword, data.name);
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Criar utilizador';
+  }
+}
+
+// ─── Toggle & Reset ──────────────────────────────────────────────────────
+async function toggleUser(id, isActive) {
+  try {
+    await api('PATCH', `/admin/api/users/${id}/toggle`);
+    toast(isActive ? 'Utilizador desactivado.' : 'Utilizador activado.', isActive ? 'err' : 'ok');
+    await loadUsers();
+  } catch (err) {
+    toast(err.message, 'err');
+  }
+}
+
+async function resetPw(id, name) {
+  if (!confirm(`Gerar novo código de acesso para ${name}?`)) return;
+  try {
+    const data = await api('PATCH', `/admin/api/users/${id}/reset-password`);
+    showCodeModal(data.tempPassword, name);
+  } catch (err) {
+    toast(err.message, 'err');
+  }
+}
+
+// ─── Code modal ──────────────────────────────────────────────────────────
+function showCodeModal(code, name) {
+  currentCode = code;
+  currentCodeName = name;
+  document.getElementById('code-display').textContent   = code;
+  document.getElementById('code-user-name').textContent = name;
+  document.getElementById('modal-code').removeAttribute('hidden');
+}
+
+function closeCodeModal() {
+  document.getElementById('modal-code').setAttribute('hidden', '');
+}
+
+function copyCode() {
+  navigator.clipboard.writeText(currentCode)
+    .then(() => toast('Código copiado!', 'ok'))
+    .catch(() => {
+      // Fallback for older browsers
+      const inp = document.getElementById('code-display');
+      const sel = window.getSelection();
+      const range = document.createRange();
+      range.selectNodeContents(inp);
+      sel.removeAllRanges(); sel.addRange(range);
+      document.execCommand('copy');
+      toast('Código copiado!', 'ok');
+    });
+}
+
+function sendWhatsApp() {
+  const text = `Olá ${currentCodeName}!\n\nO teu código de acesso à plataforma *Guia do Autarca PSD Montalegre* é:\n\n*${currentCode}*\n\nInicia sessão e altera a password no primeiro acesso.`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────────
+function esc(str) {
+  return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function roleLabel(role) {
+  return { admin: 'Admin', editor: 'Editor', member: 'Membro' }[role] ?? role;
+}
+
+function relativeTime(dateStr) {
+  if (!dateStr) return 'Nunca';
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const m = Math.floor(diff / 60000);
+  const h = Math.floor(diff / 3600000);
+  const d = Math.floor(diff / 86400000);
+  if (m < 1)  return 'Agora mesmo';
+  if (m < 60) return `Há ${m} min`;
+  if (h < 24) return `Há ${h}h`;
+  if (d === 1) return 'Ontem';
+  if (d < 7)  return `Há ${d} dias`;
+  return new Date(dateStr).toLocaleDateString('pt-PT', { day:'2-digit', month:'short' });
+}
+
+let toastTimer;
+function toast(msg, type = '') {
+  const el = document.getElementById('toast');
+  clearTimeout(toastTimer);
+  el.textContent = msg;
+  el.className = 'show ' + type;
+  toastTimer = setTimeout(() => { el.className = ''; }, 3200);
+}
+
+// Close overlays on backdrop click
+document.getElementById('modal-create').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeCreateModal();
+});
+document.getElementById('modal-code').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeCodeModal();
+});
+
+// Close on Escape
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeCreateModal(); closeCodeModal(); }
+});
+</script>
+</body>
+</html>
