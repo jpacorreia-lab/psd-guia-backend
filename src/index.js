@@ -15,8 +15,17 @@ const app = express();
 app.set('trust proxy', 1);
 
 app.use(helmet({ contentSecurityPolicy: false }));
+const ALLOWED_ORIGINS = [
+  'http://localhost:3000',
+  'https://jpacorreia-lab.github.io',
+  ...(process.env.CORS_ORIGIN ? [process.env.CORS_ORIGIN] : []),
+];
+
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  origin: (origin, cb) => {
+    if (!origin || ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
+    cb(new Error(`CORS bloqueado: ${origin}`));
+  },
   credentials: true,
 }));
 app.use(express.json());
