@@ -201,6 +201,7 @@
     .btn-activate   { background: var(--green-bg); color: var(--green); }
     .btn-deactivate { background: var(--red-bg); color: var(--red); }
     .btn-reset      { background: var(--orange-dim); color: var(--orange-dark); }
+    .btn-delete     { background: var(--red-bg); color: var(--red); }
     .btn-sm:hover { opacity: .75; }
 
     /* Empty state */
@@ -707,6 +708,10 @@ function renderUsers(users) {
           `}
           <button class="btn-sm btn-reset" onclick="resetPw('${u.id}','${esc(u.name)}')"
             aria-label="Reset password de ${esc(u.name)}">Reset PW</button>
+          ${isSelf ? '' : `
+            <button class="btn-sm btn-delete" onclick="deleteUser('${u.id}','${esc(u.name)}')"
+              aria-label="Apagar ${esc(u.name)}">Apagar</button>
+          `}
         </div>
       </td>
     </tr>`;
@@ -792,6 +797,17 @@ async function resetPw(id, name) {
   try {
     const data = await api('PATCH', `/admin/api/users/${id}/reset-password`);
     showCodeModal(data.tempPassword, name);
+  } catch (err) {
+    toast(err.message, 'err');
+  }
+}
+
+async function deleteUser(id, name) {
+  if (!confirm(`Apagar o utilizador "${name}" permanentemente? Esta acção não pode ser desfeita.`)) return;
+  try {
+    await api('DELETE', `/admin/api/users/${id}`);
+    toast(`Utilizador ${name} apagado.`, 'ok');
+    await loadUsers();
   } catch (err) {
     toast(err.message, 'err');
   }

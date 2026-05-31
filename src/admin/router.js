@@ -97,4 +97,20 @@ router.patch('/api/users/:id/reset-password', requireAuth, requireRole('admin'),
   res.json({ tempPassword, name: user.name });
 });
 
+router.delete('/api/users/:id', requireAuth, requireRole('admin'), async (req, res) => {
+  const { id } = req.params;
+  if (id === req.user.id) return res.status(400).json({ error: 'Não pode apagar a sua própria conta' });
+
+  const user = await prisma.user.findUnique({ where: { id } });
+  if (!user) return res.status(404).json({ error: 'Utilizador não encontrado' });
+
+  await prisma.user.delete({ where: { id } });
+
+  await prisma.auditLog.create({
+    data: { actorId: req.user.id, action: 'DELETE_USER', target: user.email },
+  });
+
+  res.json({ ok: true });
+});
+
 module.exports = router;
