@@ -18,12 +18,14 @@ app.use(helmet({ contentSecurityPolicy: false }));
 const ALLOWED_ORIGINS = [
   'http://localhost:3000',
   'https://jpacorreia-lab.github.io',
+  'https://psd-guia-backend-production.up.railway.app',
   ...(process.env.CORS_ORIGIN ? [process.env.CORS_ORIGIN] : []),
 ];
 
 app.use(cors({
   origin: (origin, cb) => {
-    if (!origin || ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
+    // null origin: browser sends this for direct file access or sandboxed iframes
+    if (!origin || origin === 'null' || ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
     cb(new Error(`CORS bloqueado: ${origin}`));
   },
   credentials: true,
