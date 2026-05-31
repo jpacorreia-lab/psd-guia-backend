@@ -48,14 +48,14 @@ async function main() {
 
   const adminEmail = process.env.ADMIN_EMAIL || 'jpacorreia@gmail.com';
   const adminPassword = process.env.ADMIN_PASSWORD || 'Admin@123456';
-  const adminName = process.env.ADMIN_NAME || 'João Pedro Correia';
+  const adminName = process.env.ADMIN_NAME || 'José Pedro Correia';
 
   console.log(`Seeding admin: ${adminEmail}…`);
   const passwordHash = await bcrypt.hash(adminPassword, 12);
 
   await prisma.user.upsert({
     where: { email: adminEmail },
-    update: { passwordHash, role: 'admin', active: true, mustChangePw: false },
+    update: { name: adminName, passwordHash, role: 'admin', active: true, mustChangePw: false },
     create: {
       name: adminName,
       email: adminEmail,
