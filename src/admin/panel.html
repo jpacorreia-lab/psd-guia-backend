@@ -826,7 +826,7 @@ function copyCode() {
 }
 
 function sendWhatsApp() {
-  const text = `Olá ${currentCodeName}!\n\nO teu código de acesso à plataforma *Guia do Autarca PSD Montalegre* é:\n\n*${currentCode}*\n\nInicia sessão e altera a password no primeiro acesso.`;
+  const text = `Olá ${currentCodeName}, o teu acesso ao Guia do Autarca PSD Montalegre está pronto. Abre este link: https://jpacorreia-lab.github.io/psd-guia-autarcas e usa o código: ${currentCode}. Qualquer dúvida contacta o José Pedro Correia: 917 708 605`;
   window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
 }
 
